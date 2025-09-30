@@ -1,14 +1,25 @@
 /**
  * Generate array of image paths for the parallax sequence
- * Images are numbered from 00102643 to 00102672
+ * Supports both naming conventions:
+ * - frame1.jpg to frameN.jpg (new format)
+ * - parallax test00XXXXX.jpg (legacy format)
  */
-export function generateImageSequence(): string[] {
+export function generateImageSequence(frameCount: number = 20, useLegacyFormat: boolean = false): string[] {
   const images: string[] = [];
-  const startNumber = 102643;
-  const endNumber = 102672;
   
-  for (let i = startNumber; i <= endNumber; i++) {
-    images.push(`/images/parallax test00${i}.jpg`);
+  if (useLegacyFormat) {
+    // Legacy format: parallax test00102643.jpg to parallax test00102672.jpg
+    const startNumber = 102643;
+    const endNumber = startNumber + frameCount - 1;
+    
+    for (let i = startNumber; i <= endNumber; i++) {
+      images.push(`/images/parallax test00${i}.jpg`);
+    }
+  } else {
+    // New format: frame1.jpg to frameN.jpg
+    for (let i = 1; i <= frameCount; i++) {
+      images.push(`/frames/frame${i}.jpg`);
+    }
   }
   
   return images;
