@@ -1,11 +1,11 @@
-/**
- * Generate array of image paths for the parallax sequence
- * Supports both naming conventions:
- * - frame1.jpg to frameN.jpg (new format)
- * - parallax test00XXXXX.jpg (legacy format)
- */
+
 export function generateImageSequence(frameCount: number = 20, useLegacyFormat: boolean = false): string[] {
   const images: string[] = [];
+  const startNumber = 1;
+  const endNumber = 30;
+
+  for (let i = startNumber; i <= endNumber; i++) {
+    images.push(`/images/${i}.jpg`);
   
   if (useLegacyFormat) {
     // Legacy format: parallax test00102643.jpg to parallax test00102672.jpg
@@ -21,7 +21,7 @@ export function generateImageSequence(frameCount: number = 20, useLegacyFormat: 
       images.push(`/frames/frame${i}.jpg`);
     }
   }
-  
+
   return images;
 }
 
@@ -30,13 +30,14 @@ export function generateImageSequence(frameCount: number = 20, useLegacyFormat: 
  */
 export function preloadImages(imagePaths: string[]): Promise<void[]> {
   return Promise.all(
-    imagePaths.map((src) => {
-      return new Promise<void>((resolve, reject) => {
-        const img = new Image();
-        img.onload = () => resolve();
-        img.onerror = reject;
-        img.src = src;
-      });
-    })
+    imagePaths.map(
+      (src) =>
+        new Promise<void>((resolve, reject) => {
+          const img = new Image();
+          img.onload = () => resolve();
+          img.onerror = () => reject(new Error(`Failed to load ${src}`));
+          img.src = src;
+        })
+    )
   );
 }
