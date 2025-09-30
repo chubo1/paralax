@@ -36,7 +36,7 @@ export default function CanvasScrollImageSequence({
    */
   useEffect(() => {
     const preloadImages = async () => {
-      const imagePromises = images.map((src, index) => {
+      const imagePromises = images.map((src) => {
         return new Promise<LoadedImage>((resolve, reject) => {
           const img = new Image();
           img.onload = () => {
@@ -109,14 +109,17 @@ export default function CanvasScrollImageSequence({
   /**
    * Update frame based on scroll progress
    * Handles smooth frame transitions and text overlay triggers
+   * Optimized for 30-image sequence with precise frame mapping
    */
   const updateFrame = useCallback(
     (progress: number) => {
-      const exactFrame = progress * (images.length - 1);
+      // Clamp progress between 0 and 1 for safety
+      const clampedProgress = Math.max(0, Math.min(1, progress));
+      const exactFrame = clampedProgress * (images.length - 1);
       const frameIndex = Math.round(exactFrame);
 
       // Only update if frame has changed to avoid unnecessary redraws
-      if (frameIndex !== lastFrameRef.current) {
+      if (frameIndex !== lastFrameRef.current && frameIndex >= 0 && frameIndex < images.length) {
         lastFrameRef.current = frameIndex;
         setCurrentFrame(frameIndex);
         drawFrame(frameIndex);
@@ -156,10 +159,11 @@ export default function CanvasScrollImageSequence({
       if (!containerRef.current || !imagesLoaded) return;
 
       const rect = containerRef.current.getBoundingClientRect();
-      const scrollProgress = Math.max(
-        0,
-        Math.min(1, -rect.top / (rect.height - window.innerHeight))
-      );
+      // Calculate scroll progress with improved precision for 30-frame sequence
+      const containerHeight = rect.height - window.innerHeight;
+      const scrollProgress = containerHeight > 0 
+        ? Math.max(0, Math.min(1, -rect.top / containerHeight))
+        : 0;
 
       // Use requestAnimationFrame to ensure smooth 60fps updates
       if (!ticking) {
